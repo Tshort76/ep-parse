@@ -1,0 +1,17 @@
+version: 1
+formatters:
+  basic:
+    format: '%(asctime)s: (%(name)s) %(message)s'
+    datefmt: "%H:%M:%S"
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: basic
+loggers:
+  atrium.ui:
+    level: DEBUG
+    handlers: [console]
+    propagate: False
+root:
+  level: DEBUG
+  handlers: [console]

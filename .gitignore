@@ -1,0 +1,9 @@
+**/.ipynb_checkpoints/*
+**/__pycache__
+*.code-workspace
+.vscode
+.venv
+.env
+logs/*.log*
+data
+dev

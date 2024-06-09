@@ -1,0 +1,24 @@
+version: 1
+formatters:
+  basic:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    datefmt: "%H:%M:%S"
+  json: 
+    format: "%(asctime)s %(name)s %(levelname)s %(message)s"
+    datefmt: "%Y-%m-%dT%H:%M:%SZ"
+    class: "pythonjsonlogger.jsonlogger.JsonFormatter"
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: basic
+    level   : INFO
+  file:
+    class: logging.handlers.TimedRotatingFileHandler
+    when: W0
+    interval: 7
+    backupCount: 1
+    formatter: json
+    filename: "logs/app.log"
+root:
+  level: DEBUG
+  handlers: [console, file]

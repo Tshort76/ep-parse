@@ -1,0 +1,13 @@
+pyyaml
+python-dotenv
+pandas
+numpy
+matplotlib
+plotly
+scipy
+dash-vtk
+fuzzywuzzy
+toolz
+ipykernel
+nbformat  # todo ... is this really needed?
+tables
