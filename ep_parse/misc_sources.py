@@ -3,8 +3,8 @@ import os
 from datetime import timedelta
 import logging
 
-import ep_parse.utils as pu
-import ep_parse.case_data as cdata
+import ep_parse.utils as u
+import ep_parse.case_data as d
 import ep_parse.common as pic
 
 log = logging.getLogger(__name__)
@@ -18,9 +18,9 @@ def parse_RF_times(filepath: str, offset: timedelta) -> tuple[str, str]:
     with open(filepath, "r") as fp:
         for line in fp.readlines():
             tokens = line.split()
-            if tokens and pu._time_only.match(tokens[0]):
-                _time = pu.as_datetime(tokens[0]) + offset
-                times.append(pu.as_time_str(_time, ms_precision=False))
+            if tokens and u._time_only.match(tokens[0]):
+                _time = u.as_datetime(tokens[0]) + offset
+                times.append(u.as_time_str(_time, ms_precision=False))
 
     if len(times) < 2:
         log.warning(f"Insufficient time covered by {filepath}, skipping file")
@@ -31,20 +31,21 @@ def parse_RF_times(filepath: str, offset: timedelta) -> tuple[str, str]:
 
 def store_md_cath_offset(case_id: str, epmed_time: str, md_cath_time: str, force: bool = False) -> None:
     if not force:
-        if offset := cdata.load_case_meta(case_id).get("md_catheter_time_offset"):
-            log.error(
+        if offset := d.load_case_meta(case_id).get("md_catheter_time_offset"):
+            log.warn(
                 f"An MD catheter offset of {offset} already exists for this case.  If that value is correct, ignore this warning.  Otherwise, rerun with FORCE = True"
             )
             return
-    offset = (pu.as_datetime(epmed_time) - pu.as_datetime(md_cath_time)).total_seconds()
-    cdata.update_case_meta(case_id, ["md_catheter_time_offset"], offset)
+    offset = (u.as_datetime(epmed_time) - u.as_datetime(md_cath_time)).total_seconds()
+    d.update_case_meta(case_id, ["md_catheter_time_offset"], offset)
+    log.info(f"Added an offset of {offset} to the meta file for {case_id}")
     return offset
 
 
 def md_catheter_logs_as_bookmark_file(case_id: str) -> None:
-    export_dir = cdata.case_file_path(case_id, pic.DataSource.MD_CATH)
+    export_dir = d.case_file_path(case_id, pic.DataSource.MD_CATH)
     assert export_dir, f"Expected a md_cathether_logs subdirectory in the case export data directory"
-    offset = cdata.load_case_meta(case_id).get("md_catheter_time_offset")
+    offset = d.load_case_meta(case_id).get("md_catheter_time_offset")
     assert offset, "No MD catheter offset has been stored for this case!"
     offset = timedelta(seconds=offset)
 
@@ -58,6 +59,5 @@ def md_catheter_logs_as_bookmark_file(case_id: str) -> None:
     for i, (stime, etime) in enumerate(sorted(times, key=lambda x: x[0])):
         rf_data += f" {stime} RF On - Session {i+1} {etime} RF Off - 10 s " + ("\n" if i % 5 == 4 else "")
 
-    fpath = os.path.join(cdata.case_data_directory(case_id), f"{case_id}_bookmarks.txt")
-    with open(fpath, "a") as fp:
+    with open(d.case_file_path(case_id, d.FileType.EPMED_LOG), "a") as fp:
         fp.write("\n" + rf_data)

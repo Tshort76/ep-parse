@@ -8,11 +8,11 @@ import ep_parse.common as pic
 def parse_RF_tags(export_dir: str, time_0: datetime) -> list[dict]:
     # Get the coordinates of each ablation site
     filepath = os.path.join(export_dir, "VisiTagExport", "Sites.txt")
-    sites = pd.read_csv(filepath, delim_whitespace=True)
+    sites = pd.read_csv(filepath, sep="\\s+")
 
     # Get the timestamp of each ablation site (SiteIndex)
     filepath = os.path.join(export_dir, "VisiTagExport", "AblationSites.txt")
-    abl_sites = pd.read_csv(filepath, delim_whitespace=True)
+    abl_sites = pd.read_csv(filepath, sep="\\s+")
 
     # Join the timestamp and coordinates
     sites_df = sites[["X", "Y", "Z", "DurationTime", "SiteIndex"]].set_index("SiteIndex")

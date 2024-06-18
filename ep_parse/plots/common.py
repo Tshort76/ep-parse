@@ -1,19 +1,10 @@
-import json
-import os
 import re
-import uuid
-from collections.abc import Sequence
-from enum import Enum
-from typing import Union, Callable
 
-import matplotlib
 import pandas as pd
 import plotly.graph_objects as pgo
-import toolz as tz
-from PIL import Image
 
 import ep_parse.constants as pc
-import ep_parse.utils as pu
+import ep_parse.utils as u
 
 PLOTLY_TEMPLATE = "plotly_dark"
 # COLOR_SCALE = px.colors.diverging.Spectral[::2] + px.colors.diverging.Spectral[1::2]
@@ -95,7 +86,7 @@ def channel_color(channel_group: pc.ChannelGroup) -> str:
 
 
 def raw_sig_color(sig_name: str):
-    return channel_color(pu.channel_group_of(sig_name))
+    return channel_color(u.channel_group_of(sig_name))
 
 
 def y_shifts(num_channels: int, y_axis: tuple):
@@ -139,57 +130,6 @@ def with_yaxis_traces(fig: pgo.Figure, trace_offsets: dict[str, float], y_range:
     )
 
 
-def add_annotation(fig: Union[dict, pgo.Figure], x, ann_type: str = "vline", **kwargs) -> pgo.Figure:
-    pfig = pgo.Figure(fig) if isinstance(fig, dict) else fig
-    match ann_type:
-        case "vline":
-            _name = kwargs.get("name", "vertical_line")
-            pfig.add_vline(
-                x=x,
-                line_dash="dash",
-                line_color=kwargs.get("color", "orange"),
-                name=_name,
-                annotation={
-                    "text": kwargs.get("label", ""),
-                    "name": _name,
-                    "xanchor": "right",
-                },
-            )
-        case "arrow":
-            pfig.add_annotation(
-                x=x,
-                y=kwargs["y"],
-                arrowcolor="#1fa8f2",
-                arrowhead=2,
-                arrowwidth=2,
-                startarrowhead=6,
-                arrowside=kwargs.get("arrowside", "end"),
-                opacity=kwargs.get("opacity", 1),
-            )
-        case "dot":
-            pfig.add_annotation(
-                x=x,
-                y=kwargs["y"],
-                showarrow=False,
-                text=kwargs.get("label", ""),
-                font_color="#ff0000",
-                opacity=1,
-            )
-
-    return pfig
-
-
-def _as_segments(boundaries: list[tuple[int, int]], y: float = 0, text: list[str] = []):
-    # Interpose None so that segments are plotted (instead of a continuous line)
-    x_vals = list(tz.concat(tz.interpose([None], boundaries)))
-    if isinstance(y, Sequence):
-        y_vals = list(tz.concat(tz.interpose([None], [[a, a] for a in y])))
-    else:
-        y_vals = list(tz.concat(tz.interpose([None], [[y, y] for _ in boundaries])))
-    hhints = list(tz.concat(tz.interpose([None, None], [[txt] for txt in text]))) if text else None
-    return x_vals, y_vals, hhints
-
-
 def pretty_layout(fig: pgo.Figure = None, x_index: pd.Index = None, configs: dict = {}) -> pgo.Figure:
     """Update figure layout (in place) so that it is standardized and aesthetically pleasing
 
@@ -204,12 +144,12 @@ def pretty_layout(fig: pgo.Figure = None, x_index: pd.Index = None, configs: dic
     fig = fig or (pgo.FigureWidget() if configs.get("ui_environment") == "jupyter" else pgo.Figure())
     fig_width, ms_adj = configs.get("fig_width"), {}
     if isinstance(x_index, pd.DatetimeIndex):
-        PPS = pu.points_per_second(x_index)
+        PPS = u.points_per_second(x_index)
         if configs.get("width_as_ms"):
-            fig_width = ms_to_fig_width(configs.get("width_as_ms"), signal_len_ms=pu.points_as_ms(len(x_index), PPS))
+            fig_width = ms_to_fig_width(configs.get("width_as_ms"), signal_len_ms=u.points_as_ms(len(x_index), PPS))
         # create 4 ticks per second
         x_ticks = list(range(0, len(x_index), int(PPS / 4)))
-        tick_labels = ["" if j % 4 else pu.as_time_str(x_index[i]) for j, i in enumerate(x_ticks)]
+        tick_labels = ["" if j % 4 else u.as_time_str(x_index[i]) for j, i in enumerate(x_ticks)]
         ms_adj = {
             "tickmode": "array",
             "tickvals": x_ticks,
@@ -265,5 +205,5 @@ def pretty_layout(fig: pgo.Figure = None, x_index: pd.Index = None, configs: dic
 
 
 def ms_to_fig_width(width_as_ms: int, signal_len_ms: int = None, PPS: int = None, signal_len_pts: int = None) -> int:
-    l = pu.points_as_ms(signal_len_pts, PPS) if signal_len_pts else signal_len_ms
+    l = u.points_as_ms(signal_len_pts, PPS) if signal_len_pts else signal_len_ms
     return max(400, (l * 2500) / width_as_ms)

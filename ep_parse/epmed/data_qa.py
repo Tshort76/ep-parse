@@ -7,9 +7,9 @@ import numpy as np
 from IPython.display import display
 
 import ep_parse.epmed.core as epm
-import ep_parse.utils as pu
+import ep_parse.utils as u
 import ep_parse.constants as pc
-import ep_parse.case_data as cdata
+import ep_parse.case_data as d
 import ep_parse.common as pic
 
 
@@ -19,8 +19,8 @@ def _data_per_session_check(channel_to_sessions: dict) -> dict:
         for col in channel_to_sessions
         for session, measurements in channel_to_sessions[col].items()
     ]
-    session2data = pu.groupby(flat_data, lambda x: x[0])
-    session2counts = {s: len(pu.groupby(vals, lambda x: x[-1])) for s, vals in session2data.items()}
+    session2data = u.groupby(flat_data, lambda x: x[0])
+    session2counts = {s: len(u.groupby(vals, lambda x: x[-1])) for s, vals in session2data.items()}
 
     return {
         s: ft.reduce(lambda x, y: {**x, **y}, map(lambda x: x[1], session2data[s]), {})
@@ -48,7 +48,7 @@ def _equal_num_measurements_per_channel_check(chan2sess: dict):
 
 def _equal_num_session_files_check(channel_to_sessions: dict):
     "Do we have an equal number of session files for each channel?"
-    length_to_channel = pu.groupby(channel_to_sessions, lambda col: len(channel_to_sessions[col]))
+    length_to_channel = u.groupby(channel_to_sessions, lambda col: len(channel_to_sessions[col]))
     if len(length_to_channel) > 1:
         z = pd.Series()  # this is just for a pretty display
         for x in length_to_channel:
@@ -73,7 +73,7 @@ def _time_covered(meta: dict, bin_data: dict):
             {
                 "session": s,
                 "start_time": meta[s]["time"],
-                "end_time": pu.as_time_str(
+                "end_time": u.as_time_str(
                     dt.datetime.strptime(meta[s]["time"], pc.TIME_FRMT) + dt.timedelta(milliseconds=dur_ms)
                 ),
                 "duration_m": round(dur_ms / (1000 * 60), 2),
@@ -120,7 +120,7 @@ def data_quality_checks(case_dir: str, channels: list[str]):
 
 
 def analyze_data_coverage(case_id: str, ablation_df: pd.DataFrame, export_dir: str, channels: list):
-    with cdata.case_signals_db(case_id) as st:
+    with d.case_signals_db(case_id) as st:
         stime, etime = st.select("signals/CS", stop=1).index[0], st.select("signals/CS", start=-1).index[0]
         print(f"BIN coverage starts at {stime} and ends at {etime}")
     display(ablation_df.iloc[[0, -1]])

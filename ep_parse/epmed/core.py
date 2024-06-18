@@ -12,13 +12,13 @@ with warnings.catch_warnings():
 
 from fuzzywuzzy import fuzz
 
-import ep_parse.utils as pu
+import ep_parse.utils as u
 import ep_parse.constants as pc
 import ep_parse.common as pic
-import ep_parse.case_data as cdata
+import ep_parse.case_data as d
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG) if pu.is_dev_mode() else log.setLevel(logging.ERROR)
+log.setLevel(logging.DEBUG) if u.is_dev_mode() else log.setLevel(logging.ERROR)
 
 # SIG_SESSION_RGX = re.compile(r"([^.]+)\.Session (\d{1,3})", re.IGNORECASE)
 SIG_TXT_RGX = re.compile(r"([^.]+)\.Session (\d{1,3}).+(\d)\.TXT", re.IGNORECASE)
@@ -98,7 +98,7 @@ def parse_signal_files(
 
     meta = parse_session_txts(dir)
     name_mapping = pic.channel_name_mapping(pic.DataSource.EPMED)
-    with cdata.case_signals_db(case_id, mode="w", compression=compress) as store:
+    with d.case_signals_db(case_id, mode="w", compression=compress) as store:
         # This grouping is done according to when the channels will be providing valuable data (i.e. mapping phase vs ablation phase)
         for group_name, group_channels in pc.CHANNEL_GROUPS.items():
             session_files = {}
@@ -132,7 +132,7 @@ def parse_signal_files(
                     ),
                 )
                 if normalize:
-                    df = pu.normalize_2_mV(df)
+                    df = u.normalize_2_mV(df)
                 if smooth:
                     df = df.rolling(window=5).mean().iloc[5:]
 
@@ -168,7 +168,7 @@ def parse_bookmark_data(data_str: str) -> pd.DataFrame:
 
 
 def parse_bookmark_file(case_id: str) -> pd.DataFrame:
-    filepath = cdata.case_file_path(case_id, cdata.FileType.EPLOG)
+    filepath = d.case_file_path(case_id, d.FileType.EPMED_LOG)
     if not os.path.exists(filepath):
         log.warning(f"{filepath} was not found, bookmark data will not be parsed")
         return
@@ -220,10 +220,10 @@ def bin_coverage(case_dir: str) -> pd.DataFrame:
     data_rows = []
     for ch in channels:
         std_name = pic.std_channel_name(ch, name_mapping)
-        ch_group = pu.channel_group_of(std_name)
+        ch_group = u.channel_group_of(std_name)
         for session, bin_file in _bins_for_channel(case_dir, ch, use_raw_name=True).items():
             smeta = session_meta[session]
-            start_time = pu.as_datetime(smeta["time"])
+            start_time = u.as_datetime(smeta["time"])
             num_samples = os.path.getsize(bin_file) / 4  # 4 bytes per int32
             dur_s = num_samples / smeta["sample_freq_hz"]  # seconds of coverage in file
             end_time = start_time + timedelta(seconds=dur_s)

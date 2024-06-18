@@ -12,7 +12,7 @@ default_notch_freq = 60.0  # Frequency to be removed from signal (Hz) - Determin
 default_q_factor = 30.0
 
 
-def _fft(sig):
+def _fft(sig: pd.Series) -> pd.Series:
     yf = rfft(sig)
     xf = rfftfreq(len(sig), 1 / SAMPLE_FREQUENCY)
     return pd.Series(data=np.abs(yf), index=xf)
@@ -21,12 +21,12 @@ def _fft(sig):
 def plot_fourier_xform(signals_df: pd.DataFrame, channels: list[str] = None) -> None:
     for ch in channels or signals_df.columns:
         vals = _fft(signals_df[ch].values)
-        vals.plot(title=ch, xlim=(0, 200), figsize=(20, 4), color="r")
+        vals.plot(backend="matplotlib", title=ch, xlim=(0, 200), figsize=(20, 4), color="r")
         plt.show()
 
 
 # https://dsp.stackexchange.com/questions/49460/apply-low-pass-butterworth-filter-in-python
-def butter_filter(signal: np.ndarray, pps: int, freq_cutoff: int = 30):
+def butter_filter(signal: np.ndarray, pps: int, freq_cutoff: int = 30) -> np.ndarray:
     w = freq_cutoff / (pps / 2)  # Normalize the frequency
     b, a = ss.butter(5, w, "low", analog=False, output="ba")
     return ss.filtfilt(b, a, signal)
@@ -35,13 +35,13 @@ def butter_filter(signal: np.ndarray, pps: int, freq_cutoff: int = 30):
 ########### Configs ###############
 
 
-def denoise(signal, notch_freq: float, Q: float):
+def denoise(signal, notch_freq: float, Q: float) -> np.ndarray:
     _sig = signal.values if type(signal) == pd.Series else signal
     b, a = ss.iirnotch(notch_freq, Q, SAMPLE_FREQUENCY)
     return ss.filtfilt(b, a, _sig)
 
 
-def _filter_frequencies(signal: np.array, notch_frequencies: list[float], sampling_freq: int):
+def _filter_frequencies(signal: np.array, notch_frequencies: list[float], sampling_freq: int) -> np.ndarray:
     for notch_freq in notch_frequencies:
         b, a = ss.iirnotch(notch_freq, int(notch_freq / 2), sampling_freq)
         signal = ss.filtfilt(b, a, signal)
@@ -49,7 +49,11 @@ def _filter_frequencies(signal: np.array, notch_frequencies: list[float], sampli
 
 
 def plot_denoised(
-    sig, notch_freq: float = default_notch_freq, Q: float = default_q_factor, title_prefix: str = "", y_axis=(-0.5, 0.5)
+    sig: pd.Series,
+    notch_freq: float = default_notch_freq,
+    Q: float = default_q_factor,
+    title_prefix: str = "",
+    y_axis=(-0.5, 0.5),
 ):
     t = range(0, len(sig))
     fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(40, 6), dpi=300)
@@ -79,6 +83,10 @@ def write_denoised_bins(
     Returns:
         list[str]: list of BIN files that we copied and modified
     """
+
+    if not os.path.exists("local"):
+        os.makedirs("local")
+
     all_bins = []
     for channel in channels:
         bin_re = re.compile(f"{channel}.+[.]BIN")
@@ -89,7 +97,7 @@ def write_denoised_bins(
             out_file = f"{bfile[:-4]}.BIN"
             sig = np.fromfile(os.path.join(export_dir, bfile), dtype=np.int32)
             denoised = denoise(sig, notch_freq, Q)
-            denoised.astype("int32").tofile("local/" + out_file)
+            denoised.astype("int32").tofile(os.path.join("local", out_file))
 
         all_bins += bin_files
 

@@ -6,9 +6,8 @@ from collections import namedtuple
 from operator import itemgetter
 from pprint import pprint
 
-import ep_parse.utils as pu
+import ep_parse.utils as u
 import ep_parse.catheters as cath
-import ep_parse.tag as ptg
 
 log = logging.getLogger(__name__)
 
@@ -115,7 +114,7 @@ def _print_connector_mappings(export_dir: str) -> None:
 
 
 def _parse_point_coords(filepath: str, catheter: cath.Catheter) -> list[tuple]:
-    df = pd.read_csv(filepath, delim_whitespace=True, skiprows=1)
+    df = pd.read_csv(filepath, sep="\\s+", skiprows=1)
     match catheter:
         case cath.Catheter.OCTARAY | cath.Catheter.PENTARAY_2_6:
             # the first few coordinates are for the stem ... skip em
@@ -135,16 +134,26 @@ def _parse_point_coords(filepath: str, catheter: cath.Catheter) -> list[tuple]:
     log.warning(f"Incorrect # of coordinates in {filepath.split(os.path.sep)[-1]}, file skipped.")
 
 
+def _format_MAP_channels(
+    channels: list[str] = None,
+    coordinates: list[list[float]] = None,
+    channel_to_coordinates: dict[str, list] = None,
+    high_fidelity: bool = True,
+) -> dict[str, list]:
+    channel_to_coordinates = channel_to_coordinates or dict(zip(channels, coordinates))
+    return {ch: {"xyz": coords, "high_fidelity": high_fidelity} for ch, coords in channel_to_coordinates.items()}
+
+
 def _map_tag_channels(catheter: cath.Catheter, abl_interval: dict):
     elc2coords = dict(zip(MAP_ELECTRODE_SEQUENCES[catheter], abl_interval["coordinates"]))
     ch2coords = cath.electrodes_to_channels(catheter, elc2coords)
-    return ptg.format_MAP_channels(channel_to_coordinates=ch2coords)
+    return _format_MAP_channels(channel_to_coordinates=ch2coords)
 
 
 def _as_MAP_tag(sync_time: str, catheter: cath.Catheter, abl_interval: dict) -> dict:
     return {
-        "start_time": pu.as_time_str(abl_interval["start_time"]),
-        "end_time": pu.as_time_str(abl_interval["end_time"]),
+        "start_time": u.as_time_str(abl_interval["start_time"]),
+        "end_time": u.as_time_str(abl_interval["end_time"]),
         "centroid": abl_interval["centroid"],
         "catheter": catheter.value,
         "channels": _map_tag_channels(catheter, abl_interval),
@@ -169,8 +178,8 @@ def _pprint_map_bounds(map_offsets: dict[str, tuple[int, int]], time_0: datetime
         vals.append(
             (
                 k,
-                pu.as_time_str(time_0 + timedelta(milliseconds=v[0])),
-                pu.as_time_str(time_0 + timedelta(milliseconds=v[-1])),
+                u.as_time_str(time_0 + timedelta(milliseconds=v[0])),
+                u.as_time_str(time_0 + timedelta(milliseconds=v[-1])),
                 len(v),
             )
         )
@@ -200,7 +209,7 @@ def raw_map_positions(
                     map_id,
                     time_0 + timedelta(milliseconds=offset),
                     coords,
-                    pu.centroid(coords),
+                    u.centroid(coords),
                 )
             )
             prev_offset = offset
@@ -225,8 +234,8 @@ def _group_by_stability(points: list[Point]) -> list[list[Point]]:
     """
     groups, group = [], [points[0]]
     for i in range(1, len(points) - 1):
-        group_center = pu.centroid([g.centroid for g in group]) if len(group) > 1 else group[0].centroid
-        dist = pu.euc_distance(group_center, points[i + 1].centroid)
+        group_center = u.centroid([g.centroid for g in group]) if len(group) > 1 else group[0].centroid
+        dist = u.euc_distance(group_center, points[i + 1].centroid)
         if dist > MAX_INTERGROUP_DISTANCE:
             groups.append(group)
             group = []
@@ -245,7 +254,7 @@ def _unique_map_positions(groups: list[list[Point]]) -> list[dict]:
                 "start_time": points[0].offset - timedelta(milliseconds=ms_pad),
                 "end_time": points[-1].offset + timedelta(milliseconds=ms_pad),
                 "coordinates": coords,
-                "centroid": pu.centroid(coords),
+                "centroid": u.centroid(coords),
                 "num_points": len(points),
                 "source_file": points[0].source_file,
                 "map_name": points[0].map_id,

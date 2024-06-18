@@ -20,5 +20,5 @@ handlers:
     formatter: json
     filename: "logs/app.log"
 root:
-  level: DEBUG
+  level: WARN
   handlers: [console, file]

@@ -1,20 +1,20 @@
 from datetime import datetime, timedelta
 from typing import Union
 import pandas as pd
-import ep_parse.utils as pu
+import ep_parse.utils as u
 from ep_parse.constants import CHANNEL_GROUPS
-import ep_parse.case_data as cdata
+import ep_parse.case_data as d
 
 
 def rf_to_stime(ablation_df: pd.DataFrame, rf_num: int, seconds_before: int = 0) -> str:
     rf_time = ablation_df[ablation_df["RF"] == rf_num]["start_time"].iloc[0]
-    start_time = pu.as_time_str(rf_time - timedelta(seconds=seconds_before))
+    start_time = u.as_time_str(rf_time - timedelta(seconds=seconds_before))
     return start_time
 
 
 def rf_to_etime(ablation_df: pd.DataFrame, rf_num: int, seconds_after: int = 0) -> str:
     rf_time = ablation_df[ablation_df["RF"] == rf_num]["end_time"].iloc[0]
-    end_time = pu.as_time_str(rf_time + timedelta(seconds=seconds_after))
+    end_time = u.as_time_str(rf_time + timedelta(seconds=seconds_after))
     return end_time
 
 
@@ -46,7 +46,7 @@ def _query_by_time(
     where = f"index >= '{start_time.isoformat()}' and index < '{end_time.isoformat()}'"
     if signals_store is None:
         assert case_id, "User must pass an open HDFStore object or a case id to query by time"
-        with cdata.case_signals_db(case_id=case_id, mode="r") as signals_store:
+        with d.case_signals_db(case_id=case_id, mode="r") as signals_store:
             result = _query_with_open_store(signals_store, channels, where)
     else:
         result = _query_with_open_store(signals_store, channels, where)
@@ -67,9 +67,9 @@ def lookup_by_time(
     case_id: str = None,
 ) -> pd.DataFrame:
     if isinstance(start_time, str):
-        start_time = pu.as_datetime(start_time)
+        start_time = u.as_datetime(start_time)
     if end_time:
-        end_time = pu.as_datetime(end_time) if isinstance(end_time, str) else end_time
+        end_time = u.as_datetime(end_time) if isinstance(end_time, str) else end_time
     else:
         end_time = start_time + timedelta(seconds=window_size)
 
@@ -102,7 +102,7 @@ def lookup_by_rf(
         pd.DataFrame: time series signal data for the channels
     """
     if ablation_df is None and case_id:
-        ablation_df = cdata.load_local_rfs(case_id)
+        ablation_df = d.load_local_rfs(case_id)
     _rf_row = ablation_df[ablation_df["RF"] == rf_num].iloc[0]
     s_time = _rf_row["start_time"]
     e_time = (_rf_row["end_time"] if over_ON_interval else s_time) + timedelta(seconds=seconds_after)
@@ -130,7 +130,7 @@ def _tdiff(bkmrk_t, t) -> int:
 
 
 def most_recent_rf(ablations: pd.DataFrame, time_str: str, seconds_prior: int = 0, strictly_before: bool = True) -> int:
-    _time = pu.as_datetime(time_str) + timedelta(seconds=seconds_prior)
+    _time = u.as_datetime(time_str) + timedelta(seconds=seconds_prior)
     i = ablations["start_time"].apply(lambda t_on: _tdiff(t_on, _time)).idxmin()
     if strictly_before:
         i = i - (1 if ablations["start_time"].iloc[i] > _time else 0)
@@ -147,26 +147,27 @@ def time_str_seq(start_time: str, end_time: str, step: int = 5) -> list:
         step (int, optional): sequence step size, in seconds. Defaults to 5.
     """
 
-    stime = pu.as_datetime(start_time)
-    interval_len = (pu.as_datetime(end_time) - stime).seconds
+    stime = u.as_datetime(start_time)
+    interval_len = (u.as_datetime(end_time) - stime).seconds
     assert interval_len >= 0, "start time must be less than end time"
 
-    return [pu.as_time_str(stime + timedelta(seconds=step * i)) for i in range(int(interval_len / step))]
+    return [u.as_time_str(stime + timedelta(seconds=step * i)) for i in range(int(interval_len / step))]
 
 
-def parse_time_str(tm: str, step: int = 4) -> list:
-    parts = tm.strip().split("|")
+def parse_time_str(_time: str) -> list:
+    parts = _time.strip().split("|")
     if len(parts) == 1:
         return [parts[0]]
 
-    assert len(parts) == 3, "Invalid time string format.  Format is '11:20:01' or '11:22:12|before|12'"
-    tm = pu.as_datetime(parts[0])
-    timez = []
+    assert len(parts) == 4, "Invalid time string format.  Format is '11:20:01' or '11:22:12|before|12|2'"
+    _time = u.as_datetime(parts[0])
+    _dur, _step = int(parts[2]), int(parts[3])
+    times = []
 
     if parts[1] == "before":
-        tm = tm - timedelta(seconds=int(parts[2]))
+        _time = _time - timedelta(seconds=_dur)
 
-    for i in range(0, int(parts[2]), step):
-        timez.append(pu.as_time_str(tm + timedelta(seconds=i)))
+    for i in range(0, _dur, _step):
+        times.append(u.as_time_str(_time + timedelta(seconds=i)))
 
-    return sorted(timez)
+    return sorted(times)

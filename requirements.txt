@@ -5,9 +5,10 @@ numpy
 matplotlib
 plotly
 scipy
-dash-vtk
 fuzzywuzzy
 toolz
 ipykernel
-nbformat  # todo ... is this really needed?
 tables
+vtk
+ipywidgets
+pyvista[all,trame]

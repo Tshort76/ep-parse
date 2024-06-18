@@ -111,7 +111,10 @@ def as_datetime(date_like: Union[str, datetime]) -> datetime:
     if not _tz_aware.search(time_str):
         time_str += "+00:00"
 
-    return datetime.fromisoformat(time_str)
+    try:
+        return datetime.fromisoformat(time_str)
+    except ValueError as e:
+        log.warn(f"Skipping invalid date string: {time_str}")
 
 
 def seconds_between(date1: Union[str, datetime], date2: Union[str, datetime]) -> float:

@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 import ep_parse.plots.common as ppc
 import ep_parse.constants as pc
-import ep_parse.utils as pu
+import ep_parse.utils as u
 import ep_parse.catheters as cath
 
 identity_map = {}
@@ -146,7 +146,7 @@ def data_coverage_plot(coverage_df, bookmark_df=None) -> pgo.Figure:
                     name=row["RF"],
                     mode="lines+markers",
                     hoverinfo="text",
-                    text=f"RF{row['RF']} ({pu.as_time_str(row['start_time'], False)} - {pu.as_time_str(row['end_time'], False)})",
+                    text=f"RF{row['RF']} ({u.as_time_str(row['start_time'], False)} - {u.as_time_str(row['end_time'], False)})",
                     line={"shape": "linear", "color": "#ff8164"},
                 )
             )
@@ -169,4 +169,4 @@ def data_coverage_plot(coverage_df, bookmark_df=None) -> pgo.Figure:
 
 
 def offset_time_str(start_time: datetime, offset_ms: int) -> str:
-    return pu.as_time_str(start_time + timedelta(milliseconds=int(offset_ms)))
+    return u.as_time_str(start_time + timedelta(milliseconds=int(offset_ms)))

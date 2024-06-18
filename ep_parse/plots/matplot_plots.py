@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib.ticker import AutoMinorLocator
 
 import ep_parse.plots.common as ppc
-import ep_parse.utils as pu
+import ep_parse.utils as u
 import logging
 
 log = logging.getLogger(__name__)
@@ -116,7 +116,7 @@ def _configure_signals_plot(
     ax.yaxis.grid(color="gray", linestyle="dashed")
     ax.xaxis.grid(color="gray", linestyle="dashed", which="both")
     ax.xaxis.set_minor_locator(AutoMinorLocator())
-    PPS = pu.points_per_second(x_index)
+    PPS = u.points_per_second(x_index)
     x_ticks = range(0, len(x_index), PPS)
     ax.set_xticks(x_ticks)
     xlabels = [x_index[i].round(freq="s").isoformat()[11:19] for i in x_ticks]

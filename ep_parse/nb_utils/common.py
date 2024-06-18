@@ -18,8 +18,15 @@ def fparams_str(fp: dict):
     return s
 
 
-def parse_rf_str(rf_str: str):
-    "Format should be something like 1,3,5-8,9,12-43,60"
+def parse_rf_str(rf_str: str) -> list[int]:
+    """Flatten a discontinuous integer ranges into a list of integers
+
+    Args:
+        rf_str (str): csv of integer ranges (e.g. '1,3,4-7,9')
+
+    Returns:
+        list[str]: corresponding list of integers (e.g. [1,3,4,5,6,7,9])
+    """
     rfs = []
 
     for s in rf_str.split(","):
@@ -32,8 +39,23 @@ def parse_rf_str(rf_str: str):
     return rfs
 
 
-def parse_user_times(t_str: str, win_len: int, step: int = None):
-    return sorted(tz.concat([sn.parse_time_str(tm, step or win_len) for tm in t_str.split(",")]))
+def parse_user_times(t_str: str) -> list[str]:
+    """Parse a CSV string of time periods, where each time period is a sequence on stepped intervals
+
+    Args:
+        t_str (str): <start-time|direction|duration|step> formatted string
+
+    Returns:
+        list[str]: sequence of start-times (in 'HH:MM:ss' format) for the intervals
+
+    Examples:
+        parse_user_times('12:00:00|after|20|10')  -->  ['12:00:00.000', '12:00:10.000']
+        parse_user_times('12:00:00|after|21|10')  -->  ['12:00:00.000', '12:00:10.000', '12:00:20.000']
+        parse_user_times('12:00:00|after|11|5')  -->  ['12:00:00.000', '12:00:05.000', '12:00:10.000'']
+        parse_user_times('12:00:00|before|20|10') -->  ['11:59:40.000', '11:59:50.000']
+
+    """
+    return sorted(tz.concat([sn.parse_time_str(tm) for tm in t_str.split(",")]))
 
 
 def expand_tag_labels(tag_type: str, intervals: str) -> list[dict]:

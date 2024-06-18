@@ -3,7 +3,6 @@ import numpy as np
 import toolz as tz
 
 import ep_parse.constants as pc
-import ep_parse.ui.common as uic
 
 
 class Catheter(str, Enum):
@@ -187,6 +186,16 @@ def mapping_channels():
     return list(tz.concat([attrs.get("channels", []) for attrs in CATHETERS.values() if attrs["type"] == "mapping"]))
 
 
+def format_MAP_channels(
+    channels: list[str] = None,
+    coordinates: list[list[float]] = None,
+    channel_to_coordinates: dict[str, list] = None,
+    high_fidelity: bool = True,
+) -> dict[str, list]:
+    channel_to_coordinates = channel_to_coordinates or dict(zip(channels, coordinates))
+    return {ch: {"xyz": coords, "high_fidelity": high_fidelity} for ch, coords in channel_to_coordinates.items()}
+
+
 def is_mapping_cath(catheter: str) -> bool:
     return False if catheter is None else (catheter in tz.valfilter(lambda x: x["type"] == "mapping", CATHETERS).keys())
 
@@ -204,21 +213,3 @@ def _safe_midpoint(e2coords: dict, e1: str, e2: str) -> tuple[float]:
 def electrodes_to_channels(catheter: Catheter, elec_coords: dict[str, tuple[float]]) -> dict[str, tuple[float]]:
     emap, channels = [CATHETERS[catheter][k] for k in ("electrode_map", "channels")]
     return {ch: _safe_midpoint(elec_coords, *emap[ch]) for ch in channels if ch in emap}
-
-
-def catheter_geometry(tag: dict, parent_size: float) -> list:
-    ch_coords = {ch: v.get("xyz") for ch, v in tag["channels"].items() if v.get("xyz")}
-    cath_props = CATHETERS.get(tag["catheter"])
-    anchor_ch, orient_ch = cath_props["channels"][0], cath_props["second_spline_channel"]
-    geos = []
-    for ch, coords in ch_coords.items():
-        if ch == anchor_ch:
-            geos.append(
-                uic.cube_geometry(
-                    parent_size, coords, color=uic.Colors.SELECTED.value, radius=uic.electrode_radius(parent_size) * 1.2
-                )
-            )
-        else:
-            color = uic.Colors.CATH_ORIENT_ELECTRODE.value if ch == orient_ch else uic.Colors.CATH_ELECTRODE.value
-            geos.append(uic.sphere_geometry(coords, color=color, radius=uic.electrode_radius(parent_size)))
-    return geos

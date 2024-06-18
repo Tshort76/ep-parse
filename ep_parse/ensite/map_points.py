@@ -3,16 +3,12 @@ import pandas as pd
 import re
 from datetime import datetime, timezone, timedelta
 from pprint import pprint
-import toolz as tz
 import logging
 
 
-import ep_parse.utils as pu
-import ep_parse.constants as pc
-import ep_parse.ui.common as uic
-import ep_parse.tag as ptg
+import ep_parse.utils as u
 import ep_parse.common as pic
-import ep_parse.catheters as cth
+import ep_parse.catheters as cath
 
 DXL_DATAFILE_RGX = re.compile(r"DxL_\d+.csv")
 MAP_ID_RGX = re.compile(r"(.+)_\d{4}_\d{2}_\d{2}.*")
@@ -78,11 +74,11 @@ def parse_grid_points(export_dir: str) -> pd.DataFrame:
 
 
 def _distance(p1, p2):
-    return pu.euc_distance([float(x) for x in p1], [float(x) for x in p2])
+    return u.euc_distance([float(x) for x in p1], [float(x) for x in p2])
 
 
-def group_into_tags(grid_points: pd.DataFrame, catheter: cth.Catheter, map_id: str = None) -> list[dict]:
-    cath_props = cth.CATHETERS[catheter]
+def group_into_tags(grid_points: pd.DataFrame, catheter: cath.Catheter, map_id: str = None) -> list[dict]:
+    cath_props = cath.CATHETERS[catheter]
     if cath_props is None:
         log.warn(f"Ensite Tag creation is not supported for {catheter.value} points.")
 
@@ -105,8 +101,8 @@ def group_into_tags(grid_points: pd.DataFrame, catheter: cth.Catheter, map_id: s
     for stime, etime in results:
         start = etime - timedelta(seconds=1) if stime == etime else stime
         d = {
-            "start_time": pu.as_time_str(start),
-            "end_time": pu.as_time_str(etime),
+            "start_time": u.as_time_str(start),
+            "end_time": u.as_time_str(etime),
             "label": "dummy",
             "catheter": catheter.value,
             "radius": 6,
@@ -125,12 +121,12 @@ def group_into_tags(grid_points: pd.DataFrame, catheter: cth.Catheter, map_id: s
         else:
             coords = [tag_df[ch].dropna().iloc[0] for ch in channels]  # first valid coord per channel
         coords = [[float(x) for x in co] for co in coords]
-        ch2coords = ptg.format_MAP_channels(channels, coords)
+        ch2coords = cath.format_MAP_channels(channels, coords)
         for ch in cath_props["channels"]:
             if ch not in ch2coords:
                 ch2coords[ch] = {"high_fidelity": True}
         d["channels"] = ch2coords
-        d["centroid"] = uic.centroid(coords)
+        d["centroid"] = u.centroid(coords)
         map_tags.append(d)
 
     return map_tags

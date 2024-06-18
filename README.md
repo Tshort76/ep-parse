@@ -6,6 +6,9 @@ A collection of programs built to assist in exporting, cleaning, and formatting 
 - [Project setup](#project-setup)
   - [Setting up Python and your virtual environment](#setting-up-python-and-your-virtual-environment)
   - [Environment variables](#environment-variables)
+  - [Logging](#logging)
+    - [Developer Settings](#developer-settings)
+    - [Analyst Settings](#analyst-settings)
 - [Quick Start Guide](#quick-start-guide)
 - [Importing Case Data](#importing-case-data)
   - [EPmed (EP system)](#epmed-ep-system)
@@ -28,8 +31,15 @@ The first time that you setup your project, you will need to create a virtual en
 - [Activate your virtual environment](#activate-a-virtual-environment)
 - Run `pip install -r requirements.txt` to install project dependencies
 ## Environment variables
-Create a file named `.env` in the `project_root` directory.  Edit that file and specify the path to the directory where you would like to store your data as the `data_filepath`.  For example, to specify `D:\\ep_exports` as the directory, you would have the line:
+Create a file named `.env` in the `project_root` directory.  Edit that file and specify the path to the directory where you would like to store your data as the `data_filepath`, e.g.
 `data_filepath="D:\\ep_exports"`
+
+## Logging
+Logger configurations are set in the `logs` directory.
+### Developer Settings
+When environment variable `DEV_MODE` exists with a non-empty value, the system will use the `logs/dev_logging_configs.yaml` setup.  This will simply stream any log statements >= DEBUG to your std output, such that you will see them in your notebook.
+### Analyst Settings
+Log statements <= INFO level will be written to the `logs/app.log` file.
 
 
 # Quick Start Guide
@@ -76,10 +86,10 @@ Create a file named `.env` in the `project_root` directory.  Edit that file and 
 Ensure that your virtual environment is running and that you have installed dependencies in it via `pip install -r requirements.txt`
 
 ## Activate a virtual environment
-You can activate your virtual environment by navigating to the `$atrium_root` directory and running:
+You can activate your virtual environment by navigating to the `project_root` directory and running:
 - `source .venv/bin/activate` on Mac/Linux
 - `.venv/Scripts/activate.ps1` on Windows
 
 ## Jupyter Notebooks
-1. Open a terminal, navigate to the `$atrium_root` directory, and activate your virtual environment
+1. Open a terminal, navigate to the `project_root` directory, and activate your virtual environment
 2. Run the jupyter notebook web UI, `jupyter notebook`, and select your notebook

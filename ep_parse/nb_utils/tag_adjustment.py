@@ -1,33 +1,11 @@
 import json
 from datetime import datetime, timedelta
-import plotly.graph_objects as pgo
 import toolz as tz
 from operator import itemgetter
 
-import ep_parse.case_data as cdata
-import ep_parse.utils as pu
+import ep_parse.case_data as d
+import ep_parse.utils as u
 import ep_parse.constants as pc
-
-
-def _draw_vline(fig, x: float) -> pgo.Figure:
-    pfig = pgo.Figure(fig) if isinstance(fig, dict) else fig
-    pfig.add_vline(
-        x=x,
-        line_dash="dash",
-        line_color="orange",
-        annotation={
-            "text": str(int(x / 2)),
-            "name": "time",
-            "xanchor": "right",
-        },
-    )
-    return pfig
-
-
-def _register_click(fig, clicks_store: list[tuple], trace, points, selector):
-    if points.xs:
-        clicks_store.append((points.xs[0], points.ys[0]))
-        return _draw_vline(fig, points.xs[0])
 
 
 def _update_tag_file(tag_file: str, tag: dict, idx: int):
@@ -95,8 +73,8 @@ def update_RF_times_by_bookmark(bookmark_df, tags: list[dict], sync_time=None) -
             rf_num = int(tag["label"][2:].strip())
             _row = bookmark_df[bookmark_df["RF"] == rf_num]
             if not _row.empty:
-                tag["start_time"] = pu.as_time_str(_row["start_time"].iloc[0])
-                tag["end_time"] = pu.as_time_str(_row["end_time"].iloc[0])
+                tag["start_time"] = u.as_time_str(_row["start_time"].iloc[0])
+                tag["end_time"] = u.as_time_str(_row["end_time"].iloc[0])
                 tag["time_synced_at"] = sync_time
 
 
@@ -106,18 +84,18 @@ def _overlaps(tags: list[dict]) -> list[str]:
 
 
 def find_overlapping_tags(case_id: str) -> list[str]:
-    grouped = tz.groupby(lambda x: x["label"][0:3], cdata.load_case_tags(case_id))
+    grouped = tz.groupby(lambda x: x["label"][0:3], d.load_case_tags(case_id))
     return _overlaps(grouped["MAP"]) + _overlaps(grouped["RF "])
 
 
 def add_seconds_to_tags(case_id: str, seconds_to_add: float) -> None:
-    tags = cdata.load_case_tags(case_id)
+    tags = d.load_case_tags(case_id)
     for t in tags:
-        s = pu.as_datetime(t["start_time"]) + timedelta(seconds=seconds_to_add)
-        t["start_time"] = pu.as_time_str(s)
+        s = u.as_datetime(t["start_time"]) + timedelta(seconds=seconds_to_add)
+        t["start_time"] = u.as_time_str(s)
         if t.get("end_time"):
-            e = pu.as_datetime(t["end_time"]) + timedelta(seconds=seconds_to_add)
-            t["end_time"] = pu.as_time_str(e)
+            e = u.as_datetime(t["end_time"]) + timedelta(seconds=seconds_to_add)
+            t["end_time"] = u.as_time_str(e)
 
-    cdata.write_case_tags(case_id, tags, mode="w")
+    d.write_case_tags(case_id, tags, mode="w")
     print(f"Updated times for {len(tags)} tags")

@@ -1,12 +1,13 @@
-import pandas as pd
-from datetime import timedelta, datetime
 import logging
 import os
 from collections import deque
+from datetime import datetime, timedelta
+
+import pandas as pd
 import toolz as tz
 
-import ep_parse.utils as pu
 import ep_parse.common as pic
+import ep_parse.utils as u
 
 log = logging.getLogger(__name__)
 
@@ -45,13 +46,16 @@ def rf_start_times(export_dir: str, rf_log: pd.DataFrame) -> list[str, str]:
 
 def parse_lesions_file(filepath: str) -> list[dict]:
     lesion_data = _parse_generic_csv(filepath)
+    if "Time" not in lesion_data:
+        raise KeyError("Missing 'Time' column in the Lesions file, see README for expected format")
     return [
         {
-            "start_time": pu.as_datetime(l["Time"]),
+            "start_time": _time,
             "coordinates": [l[k] for k in ["xt", "yt", "zt"]],
             "lesion_id": l["Text"],
         }
         for l in lesion_data[lesion_data["Time"].notna()].to_dict(orient="records")
+        if (_time := u.as_datetime(l["Time"]))
     ]
 
 
@@ -65,8 +69,8 @@ def parse_automark_RFs(filepath: str) -> list[dict]:
         rf_tags.append(
             {
                 "lesion_id": r["Lesion ID"],
-                "start_time": pu.as_datetime(r["Start Time"]),
-                "end_time": pu.as_datetime(r["End Time"]),
+                "start_time": u.as_datetime(r["Start Time"]),
+                "end_time": u.as_datetime(r["End Time"]),
                 "coordinates": [r[k] for k in ["X", "Y", "Z"]],
             }
         )
@@ -88,9 +92,9 @@ def _lesions_with_bookmark_RF(lesions: list[dict], rf_log: list[dict]) -> list[d
                 current_lesions, prev_rf = [], curr_rf
                 curr_rf = rf_Q.popleft() if rf_Q else None
         else:
-            rf_context_str = f"Previous RF end: {pu.as_time_str(prev_rf['end_time'])}, Next RF start: {pu.as_time_str(curr_rf['start_time'])}"
+            rf_context_str = f"Previous RF end: {u.as_time_str(prev_rf['end_time'])}, Next RF start: {u.as_time_str(curr_rf['start_time'])}"
             log.warn(
-                f"Discarding outlier lesion {lesion['lesion_id']}: {pu.as_time_str(lesion['start_time'], False)} - {rf_context_str}"
+                f"Discarding outlier lesion {lesion['lesion_id']}: {u.as_time_str(lesion['start_time'], False)} - {rf_context_str}"
             )
             lesion = lesions_Q.popleft()
 
@@ -107,7 +111,7 @@ def _lesion_end_time(lesion: dict, offset: timedelta, rf_end: datetime, nxt: dic
         else:  # use RF end time as lesion end time
             tag_end = rf_end
     tag_end = min(tag_end + offset, rf_end)
-    return pu.as_time_str(tag_end)
+    return u.as_time_str(tag_end)
 
 
 def _as_rf_tags(rfs_with_lesions: list[dict]) -> list[dict]:
@@ -121,7 +125,7 @@ def _as_rf_tags(rfs_with_lesions: list[dict]) -> list[dict]:
                     pic.as_RF_tag(
                         rf_num=len(tags) + 1,
                         coords=lesion["coordinates"],
-                        stime=pu.as_time_str(lesion["start_time"] + rf_offset),
+                        stime=u.as_time_str(lesion["start_time"] + rf_offset),
                         etime=_lesion_end_time(lesion, rf_offset, rf_data["end_time"], next_lesion),
                         sync_time=sync_time,
                         trace=("Automarksummary_LesionID==" if "end_time" in lesion else "Lesions_Text==")

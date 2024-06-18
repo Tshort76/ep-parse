@@ -3,9 +3,8 @@ import pandas as pd
 import logging
 from datetime import datetime, timedelta
 
-import ep_parse.utils as pu
-import ep_parse.case_data as cdata
-import ep_parse.geo_parsing as geo
+import ep_parse.utils as u
+import ep_parse.case_data as d
 import ep_parse.carto.geometries as cgeo
 import ep_parse.carto.ablations as cab
 import ep_parse.carto.map_points as cmp
@@ -13,14 +12,14 @@ import ep_parse.common as pic
 
 
 log = logging.getLogger(__name__)
-_ = log.setLevel(logging.DEBUG) if pu.is_dev_mode() else log.setLevel(logging.WARN)
+_ = log.setLevel(logging.DEBUG) if u.is_dev_mode() else log.setLevel(logging.WARN)
 
 
 # Because all times are given as an offset from some unknown time
 def _case_time_0(export_dir: str, bookmarks: pd.DataFrame) -> datetime:
     # parse sessions because sites might be missing low duration sessions and we need alignment with bookmarks
     filepath = os.path.join(export_dir, "VisiTagExport", "VisiTagSessions.txt")
-    visi = pd.read_csv(filepath, delim_whitespace=True).sort_values("StartTs", ignore_index=True)
+    visi = pd.read_csv(filepath, sep="\\s+").sort_values("StartTs", ignore_index=True)
 
     n = min(len(bookmarks), len(visi))
     bkmrk_durs = [x.total_seconds() for x in (bookmarks["end_time"] - bookmarks["start_time"])][0:n]
@@ -50,7 +49,7 @@ def _case_time_0(export_dir: str, bookmarks: pd.DataFrame) -> datetime:
 
 
 def import_carto_export(case_id: str, parse_types: list[str], event_loader_fn, opts: dict = {}) -> None:
-    export_dir = cdata.case_file_path(case_id, pic.DataSource.CARTO)
+    export_dir = d.case_file_path(case_id, pic.DataSource.CARTO)
     log.info(f"Loading {case_id} carto export data at location: {export_dir}")
     atria_meshes = cgeo.atrium_geo_meshes(export_dir)
 
@@ -59,7 +58,7 @@ def import_carto_export(case_id: str, parse_types: list[str], event_loader_fn, o
         la_file = os.path.join(export_dir, atria_meshes["LA"]) if atria_meshes.get("LA") else None
         ra_file = os.path.join(export_dir, atria_meshes["RA"]) if atria_meshes.get("RA") else None
         geo_vtks = cgeo.parse_meshes_as_vtk(case_id, la_file=la_file, ra_file=ra_file)
-        log.info(f"Parsed geo files: {geo_vtks}")
+        log.info(f"Parsed geo files:\n{'\n'.join(geo_vtks)}")
 
     if set(parse_types).intersection(("RF", "MAP")):
         time_0 = _case_time_0(export_dir, event_loader_fn(case_id))
@@ -67,13 +66,13 @@ def import_carto_export(case_id: str, parse_types: list[str], event_loader_fn, o
     rf_tags = []
     if "RF" in parse_types:
         rf_tags = cab.parse_RF_tags(export_dir, time_0)
-        geo.update_vtk_fields(case_id, rf_tags, adjust_points=True)
+        # geo.update_vtk_fields(case_id, rf_tags, adjust_points=True)
         log.info(f"Parsed {len(rf_tags)} RF tags from Lesions file")
-        cdata.write_case_tags(case_id, rf_tags, mode="r")
+        d.write_case_tags(case_id, rf_tags, mode="r")
 
     map_tags = []
     if "MAP" in parse_types:
         map_tags = cmp.parse_Map_tags(export_dir, time_0, opts)
-        geo.update_vtk_fields(case_id, map_tags, adjust_points=False)
+        # geo.update_vtk_fields(case_id, map_tags, adjust_points=False)
         log.info(f"Parsed {len(map_tags)} MAP tags from Map files")
-        cdata.write_case_tags(case_id, map_tags, mode="r")
+        d.write_case_tags(case_id, map_tags, mode="r")

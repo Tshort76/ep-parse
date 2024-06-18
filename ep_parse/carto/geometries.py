@@ -3,11 +3,11 @@ import os
 import logging
 
 import ep_parse.geo_parsing as geo
-import ep_parse.utils as pu
-import ep_parse.case_data as cdata
+import ep_parse.utils as u
+import ep_parse.case_data as d
 
 log = logging.getLogger(__name__)
-_ = log.setLevel(logging.DEBUG) if pu.is_dev_mode() else log.setLevel(logging.WARN)
+_ = log.setLevel(logging.DEBUG) if u.is_dev_mode() else log.setLevel(logging.WARN)
 
 LA_VTK = re.compile(r".*\d-la\.mesh", re.IGNORECASE)
 RA_VTK = re.compile(r".*\d-ra\.mesh", re.IGNORECASE)
@@ -74,7 +74,7 @@ def _mesh_as_geo(mesh_file: str) -> dict:
 
 
 def parse_meshes_as_vtk(case_id: str, la_file: str = None, ra_file: str = None):
-    files_written, case_dir = [], cdata.case_data_directory(case_id)
+    files_written, case_dir = [], d.case_file_path(case_id)
     if ra_file:
         ra_geo = _mesh_as_geo(ra_file)
         filepath = os.path.join(case_dir, f"{case_id}_RA.vtk")

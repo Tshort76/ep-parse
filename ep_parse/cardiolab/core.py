@@ -5,10 +5,10 @@ import numpy as np
 from datetime import datetime
 import os
 
-import ep_parse.utils as pu
+import ep_parse.utils as u
 import ep_parse.constants as pc
 import ep_parse.common as pic
-import ep_parse.case_data as cdata
+import ep_parse.case_data as d
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -133,7 +133,7 @@ def meta_n_bin(case_dir) -> list[tuple[dict, str]]:
 
 
 def parse_signals(case_id: str, case_dir: str, channels: list[str] = None, compress: bool = True):
-    with cdata.case_signals_db(case_id, mode="w", compression=compress) as store:
+    with d.case_signals_db(case_id, mode="w", compression=compress) as store:
         for meta, bn in meta_n_bin(case_dir):
             parse_bin_file(meta, bn, channels, store)
 
@@ -155,7 +155,7 @@ def parse_log(data_str: str) -> pd.DataFrame:
 
 
 def _raw_log_path(case_id: str) -> str:
-    _path = cdata.case_file_path(case_id, cdata.FileType.CARDIOLAB_LOG)
+    _path = d.case_file_path(case_id, d.FileType.CARDIOLAB_LOG)
     if os.path.exists(_path):
         return _path
 
@@ -189,13 +189,11 @@ def _dir_coverage(subdir: str, name_mapping: dict) -> list[tuple]:
         if f.endswith(".inf"):
             meta_file = os.path.join(subdir, f)
             meta = _parse_meta_file(meta_file)
-            stime = pu.as_datetime(meta["start_time"])
-            etime = pu.as_datetime(meta["end_time"])
+            stime = u.as_datetime(meta["start_time"])
+            etime = u.as_datetime(meta["end_time"])
             for ch in meta["channels"]:
                 pname = pic.std_channel_name(ch, name_mapping)
-                row_data.append(
-                    (stime, etime, meta_file.replace(".inf", ".BIN"), ch, pname, pu.channel_group_of(pname))
-                )
+                row_data.append((stime, etime, meta_file.replace(".inf", ".BIN"), ch, pname, u.channel_group_of(pname)))
     return row_data
 
 

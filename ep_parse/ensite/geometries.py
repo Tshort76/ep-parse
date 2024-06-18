@@ -1,6 +1,6 @@
 import os
 import ep_parse.geo_parsing as geo
-import ep_parse.case_data as cdata
+import ep_parse.case_data as d
 
 
 def _format_data(dtype: str, data_line: str) -> list:
@@ -50,7 +50,7 @@ def _parse_geoXML_data(model_file: str) -> list[str]:
 def geoXML_as_vtk(case_id: str, filepath: str) -> list[str]:
     "Parses the geometries from the file and creates vtk files for them.  Returns vtk filenames"
     geometries, filenames = _parse_geoXML_data(filepath), []
-    case_dir = cdata.case_data_directory(case_id)
+    case_dir = d.case_file_path(case_id)
 
     if len(geometries) > 1:
         for geo_data in geometries:
@@ -64,7 +64,3 @@ def geoXML_as_vtk(case_id: str, filepath: str) -> list[str]:
     geo_data = geo.combine_geos(geometries)
     geo.geo_data_as_vtk(geo_data, output_file)
     return filenames + [output_file]
-
-
-def adjust_geo_meta(case_id: str, tags: list[dict], adjust_points: bool = True) -> None:
-    return geo.update_vtk_fields(case_id, tags, adjust_points)
