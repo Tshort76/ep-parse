@@ -1,0 +1,10 @@
+Case Id=CASE001
+Date=06/21/2023
+Time=12:33:12
+Sample Rate=2000 Hz
+Channel Resolution=78 nV/LSB
+I.Session 14 - Page 1.1.BIN,1,43,.5  Hz,30 Hz,White,ECG,,
+B1-B2.Session 14 - Page 2.11.BIN,2,384,20 Hz,300 Hz,Lt Red,CIM,36,35
+ABL d.Session 14 - Page 2.25.BIN,2,896,30 Hz,300 Hz,Lt Red,CIM,52,51
+V1.Session 14 - Page 7.7.BIN,7,392,.5  Hz,30 Hz,White,ECG,,
+CS 1-2.Session 14 - Page 7.15.BIN,7,873,20 Hz,300 Hz,Yellow,CIM,22,21

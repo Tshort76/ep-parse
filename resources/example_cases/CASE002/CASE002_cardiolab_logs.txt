@@ -1,0 +1,38 @@
+12:34:05 PM	Protocol: BASELINE
+1:21:54 PM	Mark		
+1:27:06 PM	Arrhy :                            		
+1:27:10 PM	Arrhy : Terminated		
+1:27:48 PM	Arrhy :                            		
+1:27:52 PM	Arrhy : Terminated		
+1:29:13 PM	Mark		
+1:35:46 PM	Arrhy :                            		
+1:35:55 PM	Arrhy : Terminated		
+1:54:06 PM	Mark		
+2:35:48 PM	Mark		
+2:36:00 PM	Mark		
+2:55:26 PM	Arrhy :                            		
+2:55:30 PM	Arrhy : Terminated		
+3:28:33 PM	Ablation 1 Start:                                 		
+3:28:57 PM	Ablation 1 End:                                 		
+3:30:11 PM	Ablation 2 Start:                                 		
+3:33:43 PM	Ablation 2 End:                                 		
+3:34:05 PM	Ablation 3 Start:                                 		
+3:35:40 PM	Ablation 3 End:                                 		
+3:36:34 PM	Ablation 4 Start:                                 		
+3:39:33 PM	Ablation 4 End:                                 		
+3:40:15 PM	Ablation 5 Start:                                 		
+3:40:43 PM	Ablation 5 End:                                 		
+3:41:12 PM	Ablation 6 Start:                                 		
+3:41:50 PM	Ablation 6 End:                                 		
+3:42:03 PM	Ablation 7 Start:                                 		
+3:42:32 PM	Ablation 7 End:                                 		
+3:42:37 PM	Ablation 8 Start:                                 		
+3:43:08 PM	Ablation 8 End:                                 		
+3:43:25 PM	Ablation 9 Start:                                 		
+3:43:58 PM	Ablation 9 End:                                 		
+3:44:44 PM	Ablation 10 Start:                                 		
+3:45:13 PM	Ablation 10 End:                                 		
+3:45:33 PM	Ablation 11 Start:                                 		
+3:46:08 PM	Ablation 11 End:                                 		
+5:23:09 PM	Mark		
+5:23:09 PM	Mark		

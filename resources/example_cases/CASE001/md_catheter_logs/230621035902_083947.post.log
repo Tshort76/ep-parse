@@ -1,0 +1,12 @@
+Ablation Date: 062123
+Catheter S/N: 00010
+Catheter Lot Number: 000000000222676
+Control Mode: TEMPERATURE
+Treatment State: POSTCOOL
+Z Magnitude: 159
+Z Slope: 0.890
+Z Phase: -11.5
+CI: 3.911
+ Gen_Time Set_Time Set_Temp    Set_P Abl_Time    Imped    DC_V    DC_I    Meas_P    Meas_V      RFI     I_D1    IRet1    Phase    TRef     TC1     TC2     TC3     TC4     TC5     TC6   TComp SetFlow    Fluid    Pump1 HeatFct
+ hh:mm:ss        s        C        W        s      Ohm       V      mA         W         V       mA       mA       mA      Deg       C       C       C       C       C       C       C       C  ml/min       ml      rpm   A^2 s
+08:39:48         0        0      0.0     1.00      112    0.68     184       0.2      3.89       34       12       33      0.0    24.1    32.4    32.8    32.6    36.0    35.7    35.7    36.0       8        7       35   4.752

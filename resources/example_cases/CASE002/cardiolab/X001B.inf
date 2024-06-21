@@ -1,0 +1,16 @@
+Patient = CASE002
+Description = 
+Date = 2/20/2024 5:02:02 PM 
+Number of Channel = 6
+Points for Each Channel = 947834
+Data Sampling Rate = 977 points/second 
+Start Time = 10/6/2002 3:33:18 PM
+Stop Time = 10/6/2002 3:49:28 PM
+Units: mmHg for pressure and mV for all others 
+Channel Number  Channel Label
+1              I
+2              V1
+3              ABL 1-2
+4              PA 1-2
+5              CS 1-2
+6              HRA 3-4
