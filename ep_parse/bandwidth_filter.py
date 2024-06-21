@@ -1,11 +1,14 @@
+import logging
+import os
+import re
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.fft import rfft, rfftfreq
 from scipy import signal as ss
-import numpy as np
-import os
-import re
+from scipy.fft import rfft, rfftfreq
+
+log = logging.getLogger(__name__)
 
 SAMPLE_FREQUENCY = 2000  # (Hz)
 default_notch_freq = 60.0  # Frequency to be removed from signal (Hz) - Determine this with Fourier logic above (peaks)
@@ -20,9 +23,13 @@ def _fft(sig: pd.Series) -> pd.Series:
 
 def plot_fourier_xform(signals_df: pd.DataFrame, channels: list[str] = None) -> None:
     for ch in channels or signals_df.columns:
-        vals = _fft(signals_df[ch].values)
-        vals.plot(backend="matplotlib", title=ch, xlim=(0, 200), figsize=(20, 4), color="r")
-        plt.show()
+        signal = signals_df[ch].values
+        if len(signal) > 10:
+            vals = _fft(signal)
+            vals.plot(backend="matplotlib", title=ch, xlim=(0, 200), figsize=(20, 4), color="r")
+            plt.show()
+        else:
+            log.warn(f"No data found for {ch}, skipping the channel ...")
 
 
 # https://dsp.stackexchange.com/questions/49460/apply-low-pass-butterworth-filter-in-python

@@ -88,8 +88,7 @@ def plot_undecorated_signals(case_id: str, configs: dict, event_df: pd.DataFrame
     delineate_by, frame_ids = [configs.get(k) for k in ["delineate_by", "delineation_ids"]]
     rf_df = core.only_rf_events(case_id, event_df=event_df) if delineate_by == "RF" else None
 
-    case_hdf = d.case_file_path(case_id, d.FileType.SIGNALS)
-    with pd.HDFStore(case_hdf, mode="r") as sstore:
+    with d.case_signals_db(case_id) as sstore:
         for i, _id in enumerate(frame_ids):
             frame_signals, notes = _signals_for_frame_id(
                 _id, sstore, {**sconfigs, "delineate_by": delineate_by}, event_df=rf_df

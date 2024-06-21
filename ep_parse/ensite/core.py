@@ -49,7 +49,7 @@ def infer_ensite_offset(case_id: str, event_loader_fn) -> float:
 # Lesions and Geo files are replicated in each subfolder
 def import_ensite_export(case_id: str, parse_types: list[str], event_loader_fn) -> None:
     export_dir = d.case_file_path(case_id, pic.DataSource.ENSITE_VELOCITY)
-    assert export_dir, f"No ensite_velocity folder found for {case_id}"
+    assert os.path.exists(export_dir), f"No ensite_velocity folder found for {case_id}"
     epmed_offset = d.load_case_meta(case_id).get("ensite_time_offset")
     assert epmed_offset is not None, "No ensite time offset has been stored for this case!"
     epmed_offset = timedelta(seconds=epmed_offset)

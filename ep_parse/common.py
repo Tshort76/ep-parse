@@ -154,8 +154,8 @@ def data_coverage_plot(coverage_df, bookmark_df=None) -> pgo.Figure:
     display_offsets = {f"{ch} ({raw_to_std[ch] or ''})": v for ch, v in ch_offsets.items()}
 
     left_margin = 7 * max(map(len, display_offsets.keys()))
-    fig_height = 20 * len(channel_order)
-    fig_width = dur_s / 10
+    fig_height = max(150, 20 * len(channel_order))
+    fig_width = max(1000, dur_s / 10)
 
     return ppc.pretty_layout(
         fig,

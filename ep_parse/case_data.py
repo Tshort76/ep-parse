@@ -180,7 +180,11 @@ def load_case_meta(case_id: str) -> dict:
 
 def update_case_meta(case_id: str, key_seq: list, data, append: bool = True):
     meta_file = case_file_path(case_id, FileType.META)
+    if not os.path.exists(meta_file):
+        create_case_meta(case_id)
+        
     return ymlh.append_to_yaml(meta_file, key_seq, data, append)
+    
 
 
 def load_local_rfs(case_id: str = None, event_df: pd.DataFrame = None) -> pd.DataFrame:

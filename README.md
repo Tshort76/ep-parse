@@ -10,6 +10,9 @@ A collection of programs built to assist in exporting, cleaning, and formatting 
     - [Developer Settings](#developer-settings)
     - [Analyst Settings](#analyst-settings)
 - [Quick Start Guide](#quick-start-guide)
+  - [Example case/study data](#example-casestudy-data)
+    - [CASE001](#case001)
+    - [CASE002](#case002)
 - [Importing Case Data](#importing-case-data)
   - [EPmed (EP system)](#epmed-ep-system)
   - [Ensite Velocity (Mapping system)](#ensite-velocity-mapping-system)
@@ -18,7 +21,6 @@ A collection of programs built to assist in exporting, cleaning, and formatting 
 - [Troubleshooting and Tips](#troubleshooting-and-tips)
   - [No module named \<...\>](#no-module-named-)
   - [Activate a virtual environment](#activate-a-virtual-environment)
-  - [Jupyter Notebooks](#jupyter-notebooks)
 
    
 # Project setup
@@ -43,8 +45,20 @@ Log statements <= INFO level will be written to the `logs/app.log` file.
 
 
 # Quick Start Guide
-1. Open a terminal, navigate to the `project_root` directory and [activate your virtual environment](#activate-a-virtual-environment)
-2. Run the jupyter notebook web UI, `jupyter notebook`, and select the `EP_parse.ipynb` notebook
+1. Organize your exported data according to system expectations (see below)
+2. Open a terminal prompt
+   1. navigate to the `project_root` directory
+   2. [activate your virtual environment](#activate-a-virtual-environment)
+3. Start a jupyter notebook, `jupyter notebook`
+   1. Select the notebook of interest
+   2. Explore!
+
+## Example case/study data
+Two segments of studies, using the various EP and MAP systems, are included in the repository.
+### CASE001
+`resources/example_cases/CASE001` has catheter voltages exported from an `epmed` system, ablating catheter positions from the `md_catheter` system, and heart geometry/mesh models and mapping catheter locations exported from an `ensite velocity` system.  You can use the `epmed_cardiolab.ipynb` notebook to parse the catheter voltages into a Pandas dataframe (stored in `H5` format) and the `carto_ensite.ipynb` notebook to parse the mesh xml file into the `vtk` format and render it in the notebook, with Lesion points overlayed on the model.  The lesion points and mapping catheter locations are also parsed and stored in the JSON format.
+### CASE002
+`resources/example_cases/CASE002` has catheter voltages exported from a `cardiolab` system and heart geometry/mesh models and mapping catheter locations exported from a `carto` system.  You can use the `epmed_cardiolab.ipynb` notebook to parse the catheter voltages into pandas DataFrames and the `carto_ensite.ipynb` notebook to parse the mesh xml file into the `vtk` format and render it in the notebook, with Lesion points overlayed on the model.
 
 # Importing Case Data
 1. For a new case (e.g. `CASE000` for this example), create a new folder in your `data_filepath` folder with the case name as the filename (e.g. `CASE000`).
@@ -89,7 +103,3 @@ Ensure that your virtual environment is running and that you have installed depe
 You can activate your virtual environment by navigating to the `project_root` directory and running:
 - `source .venv/bin/activate` on Mac/Linux
 - `.venv/Scripts/activate.ps1` on Windows
-
-## Jupyter Notebooks
-1. Open a terminal, navigate to the `project_root` directory, and activate your virtual environment
-2. Run the jupyter notebook web UI, `jupyter notebook`, and select your notebook

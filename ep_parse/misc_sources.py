@@ -52,8 +52,10 @@ def md_catheter_logs_as_bookmark_file(case_id: str) -> None:
     times = []
     for filename in os.listdir(export_dir):
         if MD_LOG_FILE.match(filename):
+            print(filename)
             if rf_times := parse_RF_times(os.path.join(export_dir, filename), offset):
                 times.append(rf_times)
+                print(rf_times)
 
     rf_data = ""
     for i, (stime, etime) in enumerate(sorted(times, key=lambda x: x[0])):

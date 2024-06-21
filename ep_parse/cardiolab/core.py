@@ -75,13 +75,13 @@ def parse_bin_file(meta: dict, bin_file: str, channels: list[str] = None, store:
     expected_len = meta["num_channels"] * meta["points_per_channel"]
     assert len(signal) == expected_len, f"Expected to read {expected_len} points, but only found {len(signal)}"
     stime, etime = [f"{pc.DEFAULT_DATE} {meta[x]}" for x in ["start_time", "end_time"]]
-    PPS = meta["num_channels"] * meta["sample_rate"]
+    pps = meta["num_channels"] * meta["sample_rate"]
     # allow difference of 5 seconds in data points (file times are rounded to nearest second, so 2 should actually be enough)
-    margin_of_error = PPS * 5
+    margin_of_error = pps * 5
     data_dur = (datetime.fromisoformat(etime) - datetime.fromisoformat(stime)).total_seconds()
-    if abs((data_dur * PPS) - len(signal)) > margin_of_error:
+    if abs((data_dur * pps) - len(signal)) > margin_of_error:
         log.warning(
-            f"Case start_time, end_time, and sampling frequency are incompatible with the number of data points in the bin file!!!  Difference amounts to {abs((data_dur * PPS) - len(signal))/PPS:.1f} seconds"
+            f"Case start_time, end_time, and sampling frequency are incompatible with the number of data points in the bin file!!!  Difference amounts to {abs((data_dur * pps) - len(signal))/pps:.1f} seconds"
         )
 
     df = pd.DataFrame(
@@ -111,9 +111,9 @@ def _inf_bin_pairs(export_dir: str) -> list[tuple[str, str]]:
     for mfile in _files_of_type(export_dir, ".inf"):
         binfile = mfile[:-4] + ".bin"
         if os.path.exists(binfile):
-            pairs.append((os.path.join(export_dir, mfile), os.path.join(export_dir, binfile)))
+            pairs.append((mfile, binfile))
         else:
-            log.warn(f"No bin file found for {export_dir}/{mfile}.  Add the bin or remove the inf file!")
+            log.warn(f"No bin file found for {mfile}.  Add the bin or remove the inf file!")
 
     for f in os.listdir(export_dir):
         d = os.path.join(export_dir, f)
